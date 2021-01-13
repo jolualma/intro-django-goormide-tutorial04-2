@@ -1,11 +1,17 @@
 
 # Introducción a Django
 
+Primeros pasos con Django utilizando el entorno de desarrollo GoormIDE, implementando los tutoriales básicos de la documentación de Django.
+
+Parte 1: Peticiones y respuestas 
+
 ## Entorno de desarrollo: GoormIDE
 https://ide.goorm.io/
 
 - Crea una cuenta (si no aún no dispones de ella)
+
 - Crea un contenedor con Django
+
 Completa el formulario con los valores deseados, por ejemplo:
     
     - Name: intro
@@ -16,6 +22,7 @@ Completa el formulario con los valores deseados, por ejemplo:
     - Additional module/package: Install MongoDB
 
 - Ejecuta el contenedor
+
 Si has utilizado el Stack Django, Ya tendrás instalado Python, Django y, además, tendrás creado un proyecto sobre el que podrás comenzar a trabajar.
 
 En el terminal, puedes comprobar la versión de Python:
@@ -57,12 +64,13 @@ Con la siguiente estructura:
 
 
 - Inicia el proyecto
+
 Aunque aún no tengamos nada implementado, podemos ver si todo va bien, iniciando el proyecto y accediendo desde el navegador.
 Primero, busca la URL y el puerto que GoormIDE ha asignado para este entorno:
 
 PROJECT > Properties > Runnig URL and Port
 
-En mi caso, https://intro-django.run-eu-central1.goorm.io (si lo deseas uedes generar una nueva)
+En mi caso, https://intro-django.run-eu-central1.goorm.io (si lo deseas puedes generar una nueva)
 
 Una vez la hayas identificado, autoriza la URL del servidor en el proyecto Django, añadiendo el HOST en la sección ALLOWED_HOSTS del fichero settings.py dentro del directorio del proyecto (intro).
 
@@ -157,6 +165,14 @@ urlpatterns = [
 ]
 ```
 En este caso, hacemos uso de la función include() que permite hacer referencia a fichero con otras rutas; en este caso, el fichero urls.y de la aplicación (módulo) polls.
+
+Ahora puede acceder a la vista index de la aplicación polls con https://intro-django.run-eu-central1.goorm.io/polls.
+
+Si desea poder acceder a esta aplicación desde la URL base del proyecto puede modificar la llamada a path() con:
+
+```
+path('/', include('polls.urls')),
+```
 
 
 # GoormIDE
