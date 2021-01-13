@@ -171,7 +171,7 @@ Ahora puede acceder a la vista index de la aplicación polls con https://intro-d
 Si desea poder acceder a esta aplicación desde la URL base del proyecto puede modificar la llamada a path() con:
 
 ```
-path('/', include('polls.urls')),
+path('', include('polls.urls')),
 ```
 
 
