@@ -145,7 +145,7 @@ Creemos ahora la plantilla templates/polls/detail.html:
 </ul>
 ```
 
-Mejoremos las URLs en los enlaces de nuestras vistas mediamnte {% url %}. Primero, incluyamos un espacio de nombres para la aplicación pools incluyendo en el fichero polls/urls.py el item app_name.
+Mejoremos las URLs en los enlaces de nuestras vistas mediamnte {% url %}. Primero, incluyamos un espacio de nombres para la aplicación pools incluyendo en el fichero polls/urls.py el item app_name, que complementará el nombre (name) de cada ruta para evitar coincidencia entre aplicaciones.
 
 ```
 from django.urls import path
@@ -161,7 +161,7 @@ urlpatterns = [
 ]
 ```
 
-Ahoa, en la plantilla index.html cambiemos la línea:
+Ahora, en la plantilla index.html cambiemos la línea:
 
 ```
 <li><a href="/polls/{{ question.id }}/">{{ question.question_text }}</a></li>
@@ -178,8 +178,6 @@ y, finalmente, incluyamos en la plantilla detail.html un enlace para volver a la
 ```
 <a href="{% url 'polls:index' %}">Volver</a>
 ```
-
-
 
 
 
