@@ -70,7 +70,7 @@ $ python manage.py migrate
 
 ```
 
-Para ir analizando lo que ocuure en la BD, instalamos el cliente sqlite3
+Para ir analizando lo que ocurre en la BD, instalamos el cliente sqlite3
 
 ```
 $ sudo apt update
@@ -333,7 +333,7 @@ y acceder a la aplicación admin desde el navegador e identificarnos con el usua
 https://intro-django.run-eu-central1.goorm.io/admin/
 ```
 
-Finalmente, vamos a registrar nuestra aplicación polls para que podamos gestionarla desde la aplicación admin. Para ello, modifica el fichero polls/admin.py para que imcluya el siguiente contenido:
+Finalmente, vamos a registrar nuestra aplicación polls para que podamos gestionarla desde la aplicación admin. Para ello, modifica el fichero polls/admin.py para que incluya el siguiente contenido:
 
 ```
 from django.contrib import admin
