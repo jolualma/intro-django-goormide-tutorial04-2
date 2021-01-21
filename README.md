@@ -3,13 +3,13 @@
 
 Continuamos implementando los tutoriales básicos de la documentación de Django (https://docs.djangoproject.com/es/2.2/).
 
-Parte 3: Vistas y plantillas (https://docs.djangoproject.com/es/2.2/intro/tutorial03/)
+Parte 4: Formulario (https://docs.djangoproject.com/es/2.2/intro/tutorial04/)
 
-En este ejercicio partimos del tutorial02 implementado en el ejercicio anterior. Puedes clonar el código desde:
-https://github.com/jolualma/intro-django-goormide-tutorial02.git
+En este ejercicio partimos del tutorial03 implementado en el ejercicio anterior. Puedes clonar el código desde:
+https://github.com/jolualma/intro-django-goormide-tutorial03
 
 
-## Crear vistas simples
+## Crear un formulario sencillo
 
 En el fichero polls/views.py vamos a crear 3 nuevas vistas muy simples, pero que en este caso contienen parámetros:
 
@@ -53,136 +53,85 @@ detail(request=<HttpRequest object>, question_id=10)
 Esto nos ha permitido comprobar como definir las URLs y asociarlas con las vistas determinadas, pero realmente no hemos creado ninguna funcionalidad para nuestra aplicación.
 
 
-## Crear vistas más complejas usando templates
-
-En Django toda vista recibe un objeto HttpRequest y debe generar como respuesta un objeto HttpResponse o una excepción.
-De forma habitual de funcionamiento sería cargar datos en un contexto y devolver el objeto HttpResponse hacia una plantilla que mostrará los resultados. Para facilitar este funcionamiento Django proporciona la función render(). La función render() recibe como parámetro el objeto petición, una plantilla como su segundo argumento y un diccionario opcional donde podemos pasar el contexto, y devuelve un objeto HttpResponse generado a partir de la plantilla donde puede utilizarse el contexto.
-
-Para implementar nuestras plantillas, creamos un directorio "templates" dentro de nuestra aplicación, ya que tal como está configurado Django por defecto en el fichero settings.py (item TEMPLATES), buscará plantillas con el template de Django (DjangoTemplates) en ese directorio. Además, para organizar las plantillas de cada aplicación, es recomendable crear dentro de ese directorio template un directorio con el nombre de la aplicación, donde finalmente ubicaremos las plantillas.
-
-```
-TEMPLATES = [
-    {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
-            ],
-        },
-    },
-]
-```
-
-
-Mejoremos nuestra vista index para mostrar las cinco últimas preguntas (Question) mediante una plantilla; para ello, modifiquemos el fichero polls/view con el siguiente código:
-
-```python
-from django.shortcuts import render
-
-from .models import Question
-
-
-def index(request):
-    latest_question_list = Question.objects.order_by('-pub_date')[:5]
-    context = {'latest_question_list': latest_question_list}
-    return render(request, 'polls/index.html', context)
-```
-
-Para incluir la plantilla para la vista index, cree dentro el fichero templates/polls/index.html que incluya el siguiente contenido:
-
-
-```html
-{% if latest_question_list %}
-    <ul>
-    {% for question in latest_question_list %}
-        <li><a href="/polls/{{ question.id }}/">{{ question.question_text }}</a></li>
-    {% endfor %}
-    </ul>
-{% else %}
-    <p>No polls are available.</p>
-{% endif %}
-```
-
-Vamos a mejorar ahora la vista detail:
-
-```python
-from django.http import Http404
-from django.shortcuts import render
-
-from .models import Question
-# ...
-def detail(request, question_id):
-    try:
-        question = Question.objects.get(pk=question_id)
-    except Question.DoesNotExist:
-        raise Http404("Question does not exist")
-    return render(request, 'polls/detail.html', {'question': question})
-```
-O bien, usando la función get_object_or_404():
-
-```python
-from django.shortcuts import get_object_or_404, render
-
-from .models import Question
-# ...
-def detail(request, question_id):
-    question = get_object_or_404(Question, pk=question_id)
-    return render(request, 'polls/detail.html', {'question': question})
-```
-Creemos ahora la plantilla templates/polls/detail.html:
+Insertemos en la vista details.html (polls/templates/polls/details.html) un formulario, quedando con el siguiente contenido:
 
 ```html
 <h1>{{ question.question_text }}</h1>
-<ul>
+
+{% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+
+<form action="{% url 'polls:vote' question.id %}" method="post">
+{% csrf_token %}
 {% for choice in question.choice_set.all %}
-    <li>{{ choice.choice_text }}</li>
+    <input type="radio" name="choice" id="choice{{ forloop.counter }}" value="{{ choice.id }}">
+    <label for="choice{{ forloop.counter }}">{{ choice.choice_text }}</label><br>
 {% endfor %}
-</ul>
-```
+<input type="submit" value="Vote">
+</form>
 
-Mejoremos las URLs en los enlaces de nuestras vistas mediamnte {% url %}. Primero, incluyamos un espacio de nombres para la aplicación pools incluyendo en el fichero polls/urls.py el item app_name, que complementará el nombre (name) de cada ruta para evitar coincidencia entre aplicaciones.
-
-```
-from django.urls import path
-
-from . import views
-
-app_name = 'polls'
-urlpatterns = [
-    path('', views.index, name='index'),
-    path('<int:question_id>/', views.detail, name='detail'),
-    path('<int:question_id>/results/', views.results, name='results'),
-    path('<int:question_id>/vote/', views.vote, name='vote'),
-]
-```
-
-Ahora, en la plantilla index.html cambiemos la línea:
-
-```
-<li><a href="/polls/{{ question.id }}/">{{ question.question_text }}</a></li>
-```
-
-por
-
-```
-<li><a href="{% url 'polls:detail' question.id %}">{{ question.question_text }}</a></li>
-```
-
-y, finalmente, incluyamos en la plantilla detail.html un enlace para volver a la vista index:
-
-```
 <a href="{% url 'polls:index' %}">Volver</a>
 ```
 
+Este formulario permitirá elegir la opción deseada para la pregunta de la cuál se muestra el detalle.
 
+Ahora, vamos a incluir una vista para mostrar los votos recibidos para cada una de las opciones de una pregunta. En el fichero views.py (polls/views) modificamos el método vote con el siguiente contenido
 
+´´´python
+from django.http import HttpResponse, HttpResponseRedirect
+from django.shortcuts import get_object_or_404, render
+from django.urls import reverse
+from django.http import Http404
 
-# GoormIDE
+from .models import Question, Choice
+
+...
+def vote(request, question_id):
+    question = get_object_or_404(Question, pk=question_id)
+    try:
+        selected_choice = question.choice_set.get(pk=request.POST['choice'])
+    except (KeyError, Choice.DoesNotExist):
+        # Redisplay the question voting form.
+        return render(request, 'polls/detail.html', {
+            'question': question,
+            'error_message': "You didn't select a choice.",
+        })
+    else:
+        selected_choice.votes += 1
+        selected_choice.save()
+        # Always return an HttpResponseRedirect after successfully dealing
+        # with POST data. This prevents data from being posted twice if a
+        # user hits the Back button.
+        return HttpResponseRedirect(reverse('polls:results', args=(question.id,)))
+...
+```
+
+El objeto request.POST es diccionario que incluye los datos enviados desde un formulario; en concreto, request.POST['choice'] devolverá el valor de la opción marcada en el formulario anterior.
+Si el parámetro consultado (en este caso, choice) no aparece se lenzará una excepción KeyError. Si se produce la excepción se volverá a renderizar la vista details.html pasándole en el contexto la pregunta y un mensaje de error. Si no se lanza la excepción, se optendrá el objeto Choice concreto, se incrementará el número de votos y se redirigirá la salida a vista respuesta. La función reverse() recibe el nombre de las vista a la que deseamos pasar el control.
+
+Modifiquemos la vista results:
+
+```python
+...
+def results(request, question_id):
+    question = get_object_or_404(Question, pk=question_id)
+    return render(request, 'polls/results.html', {'question': question})
+...
+```
+
+y creemos un template para ella:
+
+```html
+<h1>{{ question.question_text }}</h1>
+
+<ul>
+{% for choice in question.choice_set.all %}
+    <li>{{ choice.choice_text }} -- {{ choice.votes }} vote{{ choice.votes|pluralize }}</li>
+{% endfor %}
+</ul>
+
+<a href="{% url 'polls:detail' question.id %}">Vote again?</a>
+```
+
 
 
 ```
